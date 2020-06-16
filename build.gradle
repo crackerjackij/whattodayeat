@@ -25,6 +25,7 @@ dependencies {
 	compile "org.apache.tomcat:tomcat-dbcp:9.0.31"
 	compileOnly "org.projectlombok:lombok"
     compile("mysql:mysql-connector-java:5.1.46")
+    compileOnly("org.springframework.boot:spring-boot-devtools")
 	annotationProcessor "org.projectlombok:lombok"
 	implementation "org.apache.tomcat.embed:tomcat-embed-jasper"
 	

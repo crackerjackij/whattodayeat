@@ -1,12 +1,23 @@
-<%@ page language="java" contentType="text/html; charset=EUC-KR"
-    pageEncoding="EUC-KR"%>
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="EUC-KR">
+<meta charset="UTF-8">
 <title>Insert title here</title>
+<script src="/js/vue.js"></script>
+<script src="/js/jquery-3.5.1.min.js"></script>
 </head>
 <body>
-Hellow World
+<div id="app">
+  <ul id="example-1">
+	  <li v-for="result in resultList">
+	    {{ result.EMPLOYEE_NO }}
+	  </li>
+	</ul>
+	<button @click="searchBtn()">버튼</button>
+</div>
+
+<script src="/js/notice.js"></script>
 </body>
 </html>
