@@ -22,7 +22,7 @@ public class NoticeController {
 	@GetMapping("")
 	public String getView(){
 		System.out.println("들어옴");
-		return "index";
+		return "/notice/noticeList";
 		
 	}
 	

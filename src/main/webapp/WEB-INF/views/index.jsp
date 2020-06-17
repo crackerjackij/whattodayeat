@@ -4,20 +4,10 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Insert title here</title>
-<script src="/js/vue.js"></script>
-<script src="/js/jquery-3.5.1.min.js"></script>
+<title>Index</title>
 </head>
 <body>
-<div id="app">
-  <ul id="example-1">
-	  <li v-for="result in resultList">
-	    {{ result.EMPLOYEE_NO }}
-	  </li>
-	</ul>
-	<button @click="searchBtn()">버튼</button>
-</div>
+메인페이지입니다.
 
-<script src="/js/notice.js"></script>
 </body>
 </html>
