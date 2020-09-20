@@ -9,13 +9,15 @@
 </head>
 <body>
 	<div id="map" style="width:100%;height:100%;position:absolute;"></div>
-	<script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=yourkey&libraries=services,clusterer,drawing"></script>
+	<script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=yourKey&libraries=services,clusterer,drawing"></script>
 	<script>
 		// 현재 초기 위치 선언
 		let x = 37.564378723742;
 		let y = 126.990358289779;
 		// 음식점 키워드
 		let foodKeyword = 'FD6';
+
+		var tm = 100;
 
 		// 맵 컨테이너 생성
 		var container = document.getElementById('map');
@@ -58,8 +60,16 @@
 					page += 1;
 					categorySearch(foodKeyword, page);
 				}else {
+					shuffleArray(keywordResultArr);	// 랜덤 정렬
+					
 					for (var i=0; i<keywordResultArr.length; i++) {
-			            displayMarker(keywordResultArr[i]);
+						// 순서대로 마커가 찍히도록 클로저 방식으로 수행
+						 (function(x){
+						    setTimeout(function(){
+						    	displayMarker(keywordResultArr[x], tm*x, x, keywordResultArr.length);
+								tm += 1;
+						    }, tm*x);
+						})(i);
 			        }
 				}
 		    }
@@ -73,18 +83,32 @@
 		}
 
 		// 지도에 마커를 표시하는 함수입니다
-		function displayMarker(place) {
+		function displayMarker(place, time, count, arrLen) {
 		    // 마커를 생성하고 지도에 표시합니다
 		    var marker = new kakao.maps.Marker({
 		        map: map,
 		        position: new kakao.maps.LatLng(place.y, place.x) 
 		    });
 
+		 	// 순서대로 마커가 사라지도록 클로저 방식으로 수행
+	 		(function(x){
+			    setTimeout(function(){
+// console.log("coun : "+count+"  ,  arr : " + arrLen);
+			    	if((count+1) != arrLen){
+				    	x.setMap(null);
+			    	}else {
+						displayPlaceInfo(place);
+
+				    }
+			    }, time);
+			})(marker);
+
 		 	// 마커와 검색결과 항목을 클릭 했을 때
             // 장소정보를 표출하도록 클릭 이벤트를 등록합니다
 		    kakao.maps.event.addListener(marker, 'click', function() {
                 displayPlaceInfo(place);
             });
+
 		}
 
 		// 마커를 클릭했을 때 해당 장소의 상세정보를 보여줄 커스텀오버레이입니다
@@ -122,6 +146,19 @@
 		kakao.maps.event.addListener(map, 'click', function(mouseEvent) {        
 // 			placeOverlay.setMap(null); 
 		});
+
+		/**
+		 * Randomize array element order in-place.
+		 * Using Durstenfeld shuffle algorithm.
+		 */
+		function shuffleArray(array) {
+		    for (var i = array.length - 1; i > 0; i--) {
+		        var j = Math.floor(Math.random() * (i + 1));
+		        var temp = array[i];
+		        array[i] = array[j];
+		        array[j] = temp;
+		    }
+		}
 
 		// 주소로 좌표 알아내기
 		function getLocByAddr(addr){
