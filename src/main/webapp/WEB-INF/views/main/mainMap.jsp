@@ -10,6 +10,7 @@
 <body>
 	<div id="map" style="width:100%;height:100%;position:absolute;"></div>
 	<script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=yourKey&libraries=services,clusterer,drawing"></script>
+	<script type="text/javascript" src="/js/map.js"></script>
 	<script>
 		// 현재 초기 위치 선언
 		let x = 37.564378723742;
@@ -17,7 +18,7 @@
 		// 음식점 키워드
 		let foodKeyword = 'FD6';
 
-		var tm = 100;
+		var tm = 10;
 
 		// 맵 컨테이너 생성
 		var container = document.getElementById('map');
@@ -52,39 +53,67 @@
 		// 키워드 검색 완료 시 호출되는 콜백함수 입니다
 		// 현재 카카오 정책 상 최대 45개 한계.
 		var keywordResultArr = new Array();
+		var cnt = 0;
 		function placesSearchCB (data, status, pagination) {
 		    if (status === kakao.maps.services.Status.OK) {
 				keywordResultArr = keywordResultArr.concat(data);
 				console.log("음식점 개수 : " + keywordResultArr.length);
-				if(pagination.hasNextPage){
-					page += 1;
-					categorySearch(foodKeyword, page);
-				}else {
-					shuffleArray(keywordResultArr);	// 랜덤 정렬
+				cnt++;
+				if(cnt/3 == mapArrs.length) doMarker();
+// 				if(pagination.hasNextPage){
+// 					page += 1;
+// 					categorySearch(foodKeyword, page);
+// 				}else {
+// 					shuffleArray(keywordResultArr);	// 랜덤 정렬
 					
-					for (var i=0; i<keywordResultArr.length; i++) {
-						// 순서대로 마커가 찍히도록 클로저 방식으로 수행
-						 (function(x){
-						    setTimeout(function(){
-						    	displayMarker(keywordResultArr[x], tm*x, x, keywordResultArr.length);
-								tm += 1;
-						    }, tm*x);
-						})(i);
-			        }
-				}
+// 					for (var i=0; i<keywordResultArr.length; i++) {
+// 						// 순서대로 마커가 찍히도록 클로저 방식으로 수행
+// 						 (function(x){
+// 						    setTimeout(function(){
+// 						    	displayMarker(keywordResultArr[x], tm*x, x, keywordResultArr.length);
+// 								tm += 1;
+// 						    }, tm*x);
+// 						})(i);
+// 			        }
+// 				}
 		    }
 		}
 
 		function categorySearch(keyword, page){
 			// 장소 검색 객체를 생성합니다
-			var ps = new kakao.maps.services.Places(map);
+// 			var ps = new kakao.maps.services.Places(map);
 			
-			ps.categorySearch(keyword, placesSearchCB, {useMapCenter:true, radius:300, page:page});
+// 			ps.categorySearch(keyword, placesSearchCB, {useMapCenter:true, radius:300, page:page});
+
+			var ps = new kakao.maps.services.Places();
+
+			mapArrs.forEach(function(e){
+				ps.categorySearch(keyword, placesSearchCB, {x:e.x, y:e.y, radius:60, page:1});
+				ps.categorySearch(keyword, placesSearchCB, {x:e.x, y:e.y, radius:60, page:2});
+				ps.categorySearch(keyword, placesSearchCB, {x:e.x, y:e.y, radius:60, page:3});
+
+			});
+
+		}
+
+		function doMarker(){
+			shuffleArray(keywordResultArr);
+
+			for (var i=0; i<keywordResultArr.length; i++) {
+// 				displayMarker(keywordResultArr[i], 1, 1, keywordResultArr.length);
+				// 순서대로 마커가 찍히도록 클로저 방식으로 수행
+				 (function(x){
+				    setTimeout(function(){
+				    	displayMarker(keywordResultArr[x], 10*x, x, keywordResultArr.length);
+						tm += 1;
+				    }, tm*x);
+				})(i);
+		     }
 		}
 
 		// 지도에 마커를 표시하는 함수입니다
 		function displayMarker(place, time, count, arrLen) {
-		    // 마커를 생성하고 지도에 표시합니다
+			// 마커를 생성하고 지도에 표시합니다
 		    var marker = new kakao.maps.Marker({
 		        map: map,
 		        position: new kakao.maps.LatLng(place.y, place.x) 
