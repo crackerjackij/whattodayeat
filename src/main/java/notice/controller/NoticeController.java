@@ -19,13 +19,6 @@ public class NoticeController {
 	@Autowired
 	NoticeService noticeService;
 
-	@GetMapping("")
-	public String getView(){
-		System.out.println("들어옴");
-		return "/main/mainMap";
-		
-	}
-	
 	@GetMapping("/list")
 	public @ResponseBody ReturnModelVo getNotice(){
 		ReturnModelVo rtn = new ReturnModelVo();
