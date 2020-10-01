@@ -2,17 +2,22 @@
  * 조회할 맵 목록
  */
 //map 1
-var map;
+var map;	// 맵 객체
 var btnArea;	// 지도 내 다시하기 버튼 영역
-var mapArrs = new Array();
+var mapArrs = new Array();	// 주변 구역 좌표 저장 배열
+var keywordResultArr = new Array();	// 주변 구역 좌표에 해당하는 음식점 배열
 var lastMaker;	// 마지막 마커
 var lastOverlay;	// 마지막 오버레이
+var isEnd = false;	// 화면 표시 완료 여부
+var cnt = 0;	// 현재 페이지 수
+var tm = 10;	// setTimeout 수행 시간. 점차 증가.
 function start(){
-	settingMap();	// 음식점 정보 세팅
+	settingMap();	// 음식점 좌표정보 세팅
 	
-	//현재 초기 위치 선언
+	//현재 초기 위치 선언(씨티센터타워)
 	let x = 37.564378723742;
 	let y = 126.990358289779;
+	
 	// 음식점 키워드
 	let foodKeyword = 'FD6';
 
@@ -26,76 +31,30 @@ function start(){
 	};
 	// 맵 생성
 	map = new kakao.maps.Map(container, options);
-	
-	map.setZoomable(false);	// 마우스 휠 확대 축소 금지
-	// 마우스 더블클릭을 이용한 확대 방지
-	kakao.maps.event.addListener(map, 'dblclick', function(mouseEvent) {
-	    mouseEvent.stopPropagation();
-	});
-
-
-	// 지도에 표시할 원을 생성합니다
-	var circle = new kakao.maps.Circle({
-	    center : new kakao.maps.LatLng(x, y),  // 원의 중심좌표 입니다 
-	    radius: 300, // 미터 단위의 원의 반지름입니다 
-	    strokeWeight: 2, // 선의 두께입니다 
-	    strokeColor: '#75B8FA', // 선의 색깔입니다
-	    strokeOpacity: 0.5, // 선의 불투명도 입니다 1에서 0 사이의 값이며 0에 가까울수록 투명합니다
-	    strokeStyle: 'dashed', // 선의 스타일 입니다
-	    fillColor: '#CFE7FF', // 채우기 색깔입니다
-	    fillOpacity: 0.5  // 채우기 불투명도 입니다   
-	}); 
-
-	// 지도에 원을 표시합니다 
-	circle.setMap(map);
-
-	// 카테고리로 음식점을 검색합니다
-	var page = 1;
-	categorySearch(foodKeyword, page);
-	
+	// 맵 제약조건 기술
+	mapCheckOption();
+	// 맵에 원 생성
+	mapMakeCircle(x,y);
 	// 다시하기 버튼 영역 생성
-	buttonArea();
+	mapMakeReStartButton();
+	// 카테고리로 음식점을 검색합니다
+	categorySearch(foodKeyword);
 	
 }
 
 // 키워드 검색 완료 시 호출되는 콜백함수 입니다
-// 현재 카카오 정책 상 최대 45개 한계.
-var keywordResultArr = new Array();
-var cnt = 0;
-var tm = 10;
 function placesSearchCB (data, status, pagination) {
     if (status === kakao.maps.services.Status.OK) {
 		keywordResultArr = keywordResultArr.concat(data);
-//		console.log("음식점 개수 : " + keywordResultArr.length);
 		cnt++;
-		if(cnt/3 == mapArrs.length) doMarker();
-//			if(pagination.hasNextPage){
-//				page += 1;
-//				categorySearch(foodKeyword, page);
-//			}else {
-//				shuffleArray(keywordResultArr);	// 랜덤 정렬
-			
-//				for (var i=0; i<keywordResultArr.length; i++) {
-//					// 순서대로 마커가 찍히도록 클로저 방식으로 수행
-//					 (function(x){
-//					    setTimeout(function(){
-//					    	displayMarker(keywordResultArr[x], tm*x, x, keywordResultArr.length);
-//							tm += 1;
-//					    }, tm*x);
-//					})(i);
-//		        }
-//			}
+		if(cnt/3 == mapArrs.length) doMarker();	// 음식점의 정보를 모두 받아오면 마커 실행
     }
 }
 
-function categorySearch(keyword, page){
+function categorySearch(keyword){
 	// 장소 검색 객체를 생성합니다
-//	var ps = new kakao.maps.services.Places(map);
-	
-//	ps.categorySearch(keyword, placesSearchCB, {useMapCenter:true, radius:300, page:page});
-
 	var ps = new kakao.maps.services.Places();
-
+	// 최대 45개 갯수제한으로 인해 위치별 3페이지를 항상 수행합니다. 한페이지당 15개씩
 	mapArrs.forEach(function(e){
 		ps.categorySearch(keyword, placesSearchCB, {x:e.x, y:e.y, radius:60, page:1});
 		ps.categorySearch(keyword, placesSearchCB, {x:e.x, y:e.y, radius:60, page:2});
@@ -109,7 +68,6 @@ function doMarker(){
 	shuffleArray(keywordResultArr);
 
 	for (var i=0; i<keywordResultArr.length; i++) {
-//			displayMarker(keywordResultArr[i], 1, 1, keywordResultArr.length);
 		// 순서대로 마커가 찍히도록 클로저 방식으로 수행
 		 (function(x){
 		    setTimeout(function(){
@@ -127,18 +85,16 @@ function displayMarker(place, time, count, arrLen) {
         map: map,
         position: new kakao.maps.LatLng(place.y, place.x) 
     });
-//console.log("arrLen :: " + arrLen);
  	// 순서대로 마커가 사라지도록 클로저 방식으로 수행
-		(function(x){
+	(function(x){
 	    setTimeout(function(){
-//console.log("coun : "+count+"  ,  arr : " + arrLen);
 	    	if((count+1) != arrLen){
-//		    	console.log("count :: "+(count+1));
 	    		x.setMap(null);
 	    	}else {
 				displayPlaceInfo(place);
 				lastMaker = x;
-
+				isEnd = true;
+	
 		    }
 	    }, time);
 	})(marker);
@@ -182,12 +138,6 @@ function displayPlaceInfo (place) {
     lastOverlay = placeOverlay;
 }
 
-// 지도에 클릭 이벤트를 등록합니다
-// 마커를 제외한 부분을 클릭하면 떠있는 커스텀 오버레이가 없어집니다.
-//kakao.maps.event.addListener(map, 'click', function(mouseEvent) {        
-//		placeOverlay.setMap(null); 
-//});
-
 /**
  * Randomize array element order in-place.
  * Using Durstenfeld shuffle algorithm.
@@ -199,6 +149,33 @@ function shuffleArray(array) {
         array[i] = array[j];
         array[j] = temp;
     }
+}
+
+// 현재 중심좌표 맵에 대한 제약사항 기술
+function mapCheckOption(){
+	map.setZoomable(false);	// 마우스 휠 확대 축소 금지
+	// 마우스 더블클릭을 이용한 확대 방지
+	kakao.maps.event.addListener(map, 'dblclick', function(mouseEvent) {
+	    mouseEvent.stopPropagation();
+	});
+}
+
+// 현재 중심좌표 맵에 원 생성
+function mapMakeCircle(x, y){
+	// 지도에 표시할 원을 생성합니다
+	var circle = new kakao.maps.Circle({
+	    center : new kakao.maps.LatLng(x, y),  // 원의 중심좌표 입니다 
+	    radius: 300, // 미터 단위의 원의 반지름입니다 
+	    strokeWeight: 2, // 선의 두께입니다 
+	    strokeColor: '#75B8FA', // 선의 색깔입니다
+	    strokeOpacity: 0.5, // 선의 불투명도 입니다 1에서 0 사이의 값이며 0에 가까울수록 투명합니다
+	    strokeStyle: 'dashed', // 선의 스타일 입니다
+	    fillColor: '#CFE7FF', // 채우기 색깔입니다
+	    fillOpacity: 0.5  // 채우기 불투명도 입니다   
+	}); 
+
+	// 지도에 원을 표시합니다 
+	circle.setMap(map);
 }
 
 // 주소로 좌표 알아내기
@@ -214,12 +191,12 @@ function getLocByAddr(addr){
 	geocoder.addressSearch(addr, callback);
 }
 
-
+// 맵 화면으로 이동
 function goStart(){
 	location.href = "/main/startMap";
 }
 
-// 음식점 정보 세팅
+// 음식점 정보 세팅(씨티센터타워 주변 17구역)
 function settingMap(){
 	var object = new Object();
 	//서울 중구 을지로 100
@@ -309,13 +286,11 @@ function settingMap(){
 }
 
 // 지도 내 다시하기 버튼 영역
-function buttonArea(){
-//	var sw = new kakao.maps.LatLng(37.562547913712, 126.994933540179), // 사각형 영역의 남서쪽 좌표
-//    ne = new kakao.maps.LatLng(37.5630720724923, 126.994054510813); // 사각형 영역의 북동쪽 좌표
+function mapMakeReStartButton(){
 
 	// 커스텀 오버레이에 표시할 내용입니다     
 	// HTML 문자열 또는 Dom Element 입니다 
-	var content = '<div class ="label"><span class="left"></span><span class="center"><button type="button" onclick="reStart();" class="btn btn-danger btn-lg">다시하기!!</button></span><span class="right"></span></div>';
+	var content = '<div id="menuBall2" class="menuBall"><a href="#" class="ball redball" onclick="reStart();" data-toggle="popover" data-placement="top" data-content="실행이 종료되면 클릭해 주세요."><div class="menuText">다시하기!!</div></a></div>';
 
 	// 커스텀 오버레이가 표시될 위치입니다 
 	var position = new kakao.maps.LatLng(37.5627425819514, 126.994132068307);  
@@ -328,14 +303,27 @@ function buttonArea(){
 
 	// 커스텀 오버레이를 지도에 표시합니다
 	customOverlay.setMap(map);
-
+	
+	$('[data-toggle="popover"]').popover();	// 툴팁 보이기
 }
-// 다시하기
+
+// 다시하기(카카오api 호출횟수를 소비하지 않는다)
 function reStart(){
-	// 데이터 초기화 후 수
+	
+	// 실행중 여부 체크
+	if(!isEnd){
+		$('[data-toggle="popover"]').popover();	// 툴팁 보이기
+		return false;
+	}else {
+		$('[data-toggle="popover"]').popover('dispose');	// 툴팁 없애기
+		isEnd = false;
+	}
+	
+	// 데이터 초기화 후 수행
 	tm = 10;
 	lastMaker.setMap(null);
 	lastOverlay.setMap(null);
 	
-	doMarker();
+	doMarker();	// 마커 실행
 }
+
