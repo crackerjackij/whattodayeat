@@ -193,7 +193,7 @@ function getLocByAddr(addr){
 
 // 맵 화면으로 이동
 function goStart(){
-	location.href = "/map.html";
+	location.href = "map.html";
 }
 
 // 음식점 정보 세팅(씨티센터타워 주변 17구역)
