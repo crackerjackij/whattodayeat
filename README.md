@@ -5,11 +5,13 @@
 본인의 회사를 주변을 조회하고자 하면 소스 내 getLocByAddr 함수를 호출하여 주소를 좌표로 변화한 다음  
 주소 좌표목록을 갱신처리 해야함  
 
-# Demo
-https://crackerjackij.github.io/whattodayeat/
-![whattodayeat](https://user-images.githubusercontent.com/20347227/158028290-7593ea90-f4e6-4bb7-8fbb-5cea21dc16ae.png)
-![whattodayeat2](https://user-images.githubusercontent.com/20347227/158028311-2a694beb-a299-4c2b-ace5-ea92ca45a447.png)
-
 # 준비사항
 카카오API KEY필요(아래 사이트 참조하여 api 키 발급)  
 https://apis.map.kakao.com/web/guide/ 
+
+# Demo
+https://crackerjackij.github.io/whattodayeat/  
+
+![whattodayeat](https://user-images.githubusercontent.com/20347227/158028290-7593ea90-f4e6-4bb7-8fbb-5cea21dc16ae.png)
+![whattodayeat2](https://user-images.githubusercontent.com/20347227/158028311-2a694beb-a299-4c2b-ace5-ea92ca45a447.png)
+
